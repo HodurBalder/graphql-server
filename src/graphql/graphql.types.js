@@ -5,7 +5,7 @@ const BookType = new GraphQLObjectType({
     name: "Book",
     description: "This represents a book written by an author",
     fields: () => ({
-        _id: { type: GraphQLNonNull(GraphQLInt) },
+        _id: { type: GraphQLNonNull(GraphQLString) },
         name: { type: GraphQLNonNull(GraphQLString) },
         year: { type: GraphQLNonNull(GraphQLInt) },
         publisher: { type: GraphQLNonNull(GraphQLString) },
@@ -13,7 +13,7 @@ const BookType = new GraphQLObjectType({
         author: {
             type: AuthorType,
             resolve: (book) => {
-                return Services.Authors.Model.findById(book.authorId); // Usar el método findById de Mongoose
+                return Services.Authors.Model.findById(book.authorId)
             },
         },
     }),
@@ -28,13 +28,43 @@ const AuthorType = new GraphQLObjectType({
         books: {
             type: new GraphQLList(BookType),
             resolve: (author) => {
-                return Services.Books.Model.find({ authorId: author._id }); // Usar el método find de Mongoose
+                return Services.Books.Model.find({ authorId: author._id })
             },
         },
     }),
 })
 
+const UserType = new GraphQLObjectType({
+    name: "User",
+    description: "This represents a User",
+    fields: () => ({
+        _id: { type: GraphQLNonNull(GraphQLString) },
+        name: { type: GraphQLNonNull(GraphQLString) },
+        role: { type: GraphQLNonNull(GraphQLString) },    
+        email: { type: GraphQLNonNull(GraphQLString) },
+        phone: { type: GraphQLNonNull(GraphQLString) },
+    }),
+})
+
+const SessionType = new GraphQLObjectType({
+    name: "Session",
+    description: "This represents a Session",
+    fields: () => ({
+        _id: { type: GraphQLNonNull(GraphQLString) },
+        token: { type: GraphQLNonNull(GraphQLString) },
+        userId: { type: GraphQLNonNull(GraphQLString) },    
+        expired: { type: GraphQLNonNull(GraphQLString) },
+        user: {
+            type: UserType,
+            resolve: (session) => {
+                return Services.Users.Model.findById( session.userId )
+            },
+        },
+    }),
+})
 module.exports = {
     BookType,
-    AuthorType
+    AuthorType,
+    UserType,
+    SessionType
 }

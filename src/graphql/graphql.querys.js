@@ -1,6 +1,7 @@
 const { GraphQLObjectType, GraphQLString, GraphQLList, GraphQLInt } = require("graphql")
-const { BookType, AuthorType } = require('./graphql.types')
+const { BookType, AuthorType, UserType, SessionType } = require('./graphql.types')
 const Services = require('../services')
+const { protectedResolver } = require('./graphql.protectedResolvers')
 
 const RootQueryType = new GraphQLObjectType({
     name: "Query",
@@ -35,6 +36,39 @@ const RootQueryType = new GraphQLObjectType({
                 name:   { type: GraphQLString },
             },
             resolve: (parent, args) => Services.Authors.Model.findOne({...args}),
+        },
+        users: {
+            type: new GraphQLList(UserType),
+            description: "List of All Users",
+            resolve: () => Services.Users.Model.find({})
+        },
+        user: {
+            type: UserType,
+            description: "A Single User",
+            args: {
+                _id:    { type: GraphQLString },
+                name:   { type: GraphQLString },
+                role:   { type: GraphQLString },
+                email:  { type: GraphQLString },
+                phone:  { type: GraphQLString },
+            },
+            resolve: (parent, args) => Services.Users.findOne({...args}),
+        },
+        users: {
+            type: new GraphQLList(UserType),
+            description: "List of All Users",
+            resolve: protectedResolver((parent, args, context) => Services.Users.Model.find({})),
+        },
+        session: {
+            type: SessionType,
+            description: "A Single Session",
+            args: {
+                _id:     { type: GraphQLString },
+                token:   { type: GraphQLString },
+                expired: { type: GraphQLString },
+                user:    { type: GraphQLString },
+            },
+            resolve: (parent, args) => Services.Sessions.findOne({...args}),
         },
     }),
 })
